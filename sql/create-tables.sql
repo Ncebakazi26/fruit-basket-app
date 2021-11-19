@@ -18,3 +18,4 @@ create table basket_item (
 	foreign key (basket_id) references basket(id)
 );
 
+-- db name = multi_fruit
