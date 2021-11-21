@@ -33,8 +33,25 @@ module.exports = function(pool) {
 
 	async function listBaskets() {
 		const selectBasketsSQL = `select * from basket `;
-		const result = await pool.query(selectBasketsSQL)
-		return result.rows;
+		const result = await pool.query(selectBasketsSQL);
+		const results = result.rows;
+
+		//get total cost for each basket
+		const withTotalCost =[];
+		for (const basket of results) {
+			const total_cost = await totalBasketCost(basket.id)
+			if (total_cost) {
+				basket.total_cost = total_cost
+			}
+			else{
+				basket.total_cost = '0.00'
+			}
+		     
+			 withTotalCost.push(basket);
+		
+		}
+		
+		return withTotalCost;
 	}
 
 	async function getBasket(basketId) {
@@ -55,6 +72,21 @@ module.exports = function(pool) {
 			return result.rows;
 		}
 	}
+	async function totalBasketCost(basketId){
+
+		const sql =`select  sum(qty * price) as total_cost
+		 		    from basket 
+				   join basket_item on basket_item.basket_id = basket.id
+		  		   join fruit on fruit.id = basket_item.fruit_id 
+		 		   where basket.id = $1`
+
+		const results = await pool.query(sql,[basketId]);
+		if (results.rowCount>0) {
+			return results.rows[0].total_cost
+			
+		}
+		return 0		
+	}
 
 	return {
 		addFruitToBasket,
@@ -62,7 +94,8 @@ module.exports = function(pool) {
 		getBasket,
 		listBaskets,
 		getBasketItems,
-		listFruits
+		listFruits,
+		totalBasketCost
 	}
 
 }

@@ -47,13 +47,15 @@ app.get('/basket/add', async function (req, res) {
 app.get('/basket/edit/:id', async function (req, res) {
 	const basketId = req.params.id
 	const basket = await fruitBasket.getBasket(basketId)
-	const fruits = await fruitBasket.listFruits(basketId)
+	const fruits = await fruitBasket.listFruits()
 	const basketItems = await fruitBasket.getBasketItems(basketId)
+	const totalCost = await fruitBasket.totalBasketCost(basketId)
 
 	res.render('basket/edit', {
 		basket,
 		fruits,
-		basketItems
+		basketItems,
+		totalCost
 
 	});
 });
